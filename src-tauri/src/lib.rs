@@ -2,13 +2,14 @@ use std::sync::Arc;
 
 use agent::worker::AgentWorker;
 use db::AppDatabase;
-use tauri::Manager;
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 
 mod agent;
 mod commands;
 mod db;
 mod tray;
+mod windows;
 
 pub struct AppState {
     pub db: AppDatabase,
@@ -46,7 +47,19 @@ pub fn run() {
             commands::windows::hide_window,
             commands::windows::register_hotkey,
         ])
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                if let Err(e) = window.hide() {
+                    log::warn!("Failed to hide window on close: {e}");
+                }
+                windows::keep_tray_only(window.app_handle());
+            }
+        })
         .setup(move |app| {
+            #[cfg(target_os = "macos")]
+            windows::keep_tray_only(app.handle());
+
             let agent_worker = AgentWorker::new(db_arc.clone(), app.handle().clone());
 
             app.manage(AppState {
@@ -55,6 +68,7 @@ pub fn run() {
             });
 
             tray::setup_tray(app)?;
+
             if let Err(e) = commands::windows::register_hotkey_from_settings(app.handle()) {
                 log::warn!("Failed to register hotkey on startup: {e}");
             }

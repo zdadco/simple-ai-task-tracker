@@ -1,10 +1,15 @@
 use tauri::{
+    image::Image,
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     App,
 };
 
 use crate::commands::windows::{show_and_focus, show_quick_capture};
+
+fn tray_icon() -> tauri::Result<Image<'static>> {
+    Image::from_bytes(include_bytes!("../icons/icon.png"))
+}
 
 pub fn setup_tray(app: &App) -> tauri::Result<()> {
     let new_task = MenuItem::with_id(app, "new_task", "Новая задача", true, None::<&str>)?;
@@ -18,10 +23,10 @@ pub fn setup_tray(app: &App) -> tauri::Result<()> {
         &[&new_task, &open_list, &settings, &separator, &quit],
     )?;
 
-    // Single tray icon (do not also define trayIcon in tauri.conf.json — that creates a duplicate on macOS).
-    let _tray = TrayIconBuilder::with_id("main")
-        .icon(app.default_window_icon().unwrap().clone())
-        .icon_as_template(true)
+    // Tray id must NOT match any window label (e.g. "main") — that breaks get_webview_window on macOS.
+    let _tray = TrayIconBuilder::with_id("app-tray")
+        .icon(tray_icon()?)
+        .icon_as_template(false)
         .menu(&menu)
         .show_menu_on_left_click(false)
         .tooltip("Micro Task Tracker")
