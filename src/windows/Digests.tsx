@@ -30,7 +30,7 @@ export default function Digests() {
           granted = result === "granted";
         }
       } catch {
-        // Notifications optional on some platforms
+        // optional
       }
     })();
   }, []);
@@ -78,13 +78,12 @@ export default function Digests() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
-        <h1 className="text-lg font-semibold text-gray-900">Дайджесты</h1>
-        <p className="mt-1 text-xs text-gray-500">
+    <div className="flex h-full flex-col">
+      <div className="border-b border-gray-200 bg-white px-6 py-3">
+        <p className="text-xs text-gray-500">
           Планы дня / недели / месяца. Локальный TZ системы.
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {(["daily", "weekly", "monthly"] as DigestKind[]).map((kind) => (
             <button
               key={kind}
@@ -100,7 +99,7 @@ export default function Digests() {
           ))}
         </div>
         {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
-      </header>
+      </div>
 
       <div className="flex gap-2 border-b border-gray-200 bg-white px-6 py-2">
         {["all", "daily", "weekly", "monthly"].map((f) => (

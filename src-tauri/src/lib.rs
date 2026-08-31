@@ -52,6 +52,8 @@ pub fn run() {
             commands::windows::show_digests_window,
             commands::windows::hide_window,
             commands::windows::register_hotkey,
+            commands::windows::unregister_hotkey,
+            commands::windows::apply_hotkey,
         ])
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {

@@ -21,4 +21,6 @@ commands.allow = [
   "show_digests_window",
   "hide_window",
   "register_hotkey",
+  "unregister_hotkey",
+  "apply_hotkey",
 ]
