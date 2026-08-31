@@ -35,6 +35,24 @@ npm run tauri:build
 
 Артефакты появятся в `src-tauri/target/release/bundle/`.
 
+## GitHub Releases
+
+Workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) собирает установщики для Windows, macOS (Intel + Apple Silicon) и Linux и создаёт **draft** release.
+
+1. Синхронизируйте версию в `package.json` и `src-tauri/tauri.conf.json` (сейчас `0.1.0`).
+2. Запушьте тег:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Либо запустите workflow вручную: **Actions → Release → Run workflow**.
+
+3. После сборки откройте draft на вкладке Releases, проверьте assets и нажмите **Publish release**.
+
+> Подпись/нотаризация macOS и подпись Windows не настроены — для публичной раздачи позже можно добавить secrets (`APPLE_*`, Windows certificate).
+
 ## Горячие клавиши
 
 | Действие | Клавиши |
