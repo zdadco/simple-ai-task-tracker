@@ -65,9 +65,15 @@ pub fn show_and_focus(app: &AppHandle, label: &str) -> Result<(), String> {
         let _ = app.show();
     }
 
-    let window = app
-        .get_webview_window(label)
-        .ok_or_else(|| format!("Window '{label}' not found"))?;
+    let window = app.get_webview_window(label).ok_or_else(|| {
+        let labels: Vec<String> = app
+            .webview_windows()
+            .keys()
+            .cloned()
+            .collect();
+        log::error!("Window '{label}' not found. Available: {labels:?}");
+        format!("Window '{label}' not found")
+    })?;
 
     window.show().map_err(|e| e.to_string())?;
     window.unminimize().ok();
