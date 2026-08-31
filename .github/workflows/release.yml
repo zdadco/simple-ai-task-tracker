@@ -10,7 +10,46 @@ permissions:
   contents: write
 
 jobs:
+  guard:
+    name: Check main branch
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure this commit is on main
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+
+          on_main=false
+          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            on_main=true
+          fi
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "Manual run is only allowed from main (got $GITHUB_REF)."
+            on_main=false
+          fi
+
+          if [ "$on_main" = true ]; then
+            echo "Release allowed: $GITHUB_SHA is on origin/main."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Skipping release: $GITHUB_SHA ($GITHUB_REF) is not on main."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
   publish-tauri:
+    needs: guard
+    if: needs.guard.outputs.should_release == 'true'
     strategy:
       fail-fast: false
       matrix:
