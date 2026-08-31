@@ -21,6 +21,9 @@ export default function TaskItem({ task, onUpdated }: TaskItemProps) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id });
@@ -45,9 +48,16 @@ export default function TaskItem({ task, onUpdated }: TaskItemProps) {
   }
 
   async function handleDelete() {
-    if (confirm("Удалить задачу?")) {
+    setDeleteError(null);
+    setDeleting(true);
+    try {
       await deleteTask(task.id);
+      setConfirmDelete(false);
       onUpdated();
+    } catch (e) {
+      setDeleteError(String(e));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -162,13 +172,40 @@ export default function TaskItem({ task, onUpdated }: TaskItemProps) {
           >
             Анализ
           </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="text-xs text-red-500 hover:text-red-700"
-          >
-            Удалить
-          </button>
+          {confirmDelete ? (
+            <div className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+              >
+                {deleting ? "..." : "Подтвердить"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmDelete(false);
+                  setDeleteError(null);
+                }}
+                disabled={deleting}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Отмена
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              Удалить
+            </button>
+          )}
+          {deleteError && (
+            <span className="text-xs text-red-600">{deleteError}</span>
+          )}
         </div>
       </div>
     </div>

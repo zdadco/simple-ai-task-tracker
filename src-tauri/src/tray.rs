@@ -18,9 +18,12 @@ pub fn setup_tray(app: &App) -> tauri::Result<()> {
         &[&new_task, &open_list, &settings, &separator, &quit],
     )?;
 
-    let _tray = TrayIconBuilder::new()
+    // Single tray icon (do not also define trayIcon in tauri.conf.json — that creates a duplicate on macOS).
+    let _tray = TrayIconBuilder::with_id("main")
         .icon(app.default_window_icon().unwrap().clone())
+        .icon_as_template(true)
         .menu(&menu)
+        .show_menu_on_left_click(false)
         .tooltip("Micro Task Tracker")
         .on_menu_event(|app, event| match event.id.as_ref() {
             "new_task" => {
@@ -45,7 +48,10 @@ pub fn setup_tray(app: &App) -> tauri::Result<()> {
             } = event
             {
                 let app = tray.app_handle();
-                let _ = show_and_focus(&app, "main");
+                log::info!("Tray left click — opening main window");
+                if let Err(e) = show_and_focus(&app, "main") {
+                    log::error!("Failed to open main window from tray: {e}");
+                }
             }
         })
         .build(app)?;

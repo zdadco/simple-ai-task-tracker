@@ -59,6 +59,12 @@ fn register_hotkey_internal(app: &AppHandle, hotkey_str: &str) -> Result<(), Str
 }
 
 pub fn show_and_focus(app: &AppHandle, label: &str) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
+        let _ = app.show();
+    }
+
     let window = app
         .get_webview_window(label)
         .ok_or_else(|| format!("Window '{label}' not found"))?;
