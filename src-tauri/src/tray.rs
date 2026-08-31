@@ -5,7 +5,7 @@ use tauri::{
     App,
 };
 
-use crate::commands::windows::{show_and_focus, show_quick_capture};
+use crate::commands::windows::{navigate_main, show_quick_capture};
 
 fn tray_icon() -> tauri::Result<Image<'static>> {
     Image::from_bytes(include_bytes!("../icons/icon.png"))
@@ -14,16 +14,16 @@ fn tray_icon() -> tauri::Result<Image<'static>> {
 pub fn setup_tray(app: &App) -> tauri::Result<()> {
     let new_task = MenuItem::with_id(app, "new_task", "Новая задача", true, None::<&str>)?;
     let open_list = MenuItem::with_id(app, "open_list", "Открыть список", true, None::<&str>)?;
+    let digests = MenuItem::with_id(app, "digests", "Дайджесты", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Настройки", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let quit = MenuItem::with_id(app, "quit", "Выход", true, None::<&str>)?;
 
     let menu = Menu::with_items(
         app,
-        &[&new_task, &open_list, &settings, &separator, &quit],
+        &[&new_task, &open_list, &digests, &settings, &separator, &quit],
     )?;
 
-    // Tray id must NOT match any window label (e.g. "main") — that breaks get_webview_window on macOS.
     let _tray = TrayIconBuilder::with_id("app-tray")
         .icon(tray_icon()?)
         .icon_as_template(false)
@@ -35,10 +35,13 @@ pub fn setup_tray(app: &App) -> tauri::Result<()> {
                 let _ = show_quick_capture(app.clone());
             }
             "open_list" => {
-                let _ = show_and_focus(&app, "main");
+                let _ = navigate_main(&app, "tasks");
+            }
+            "digests" => {
+                let _ = navigate_main(&app, "digests");
             }
             "settings" => {
-                let _ = show_and_focus(&app, "settings");
+                let _ = navigate_main(&app, "settings");
             }
             "quit" => {
                 app.exit(0);
@@ -54,7 +57,7 @@ pub fn setup_tray(app: &App) -> tauri::Result<()> {
             {
                 let app = tray.app_handle();
                 log::info!("Tray left click — opening main window");
-                if let Err(e) = show_and_focus(&app, "main") {
+                if let Err(e) = navigate_main(&app, "tasks") {
                     log::error!("Failed to open main window from tray: {e}");
                 }
             }

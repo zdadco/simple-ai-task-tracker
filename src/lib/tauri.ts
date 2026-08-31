@@ -1,8 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 
 export type TaskPriority = "low" | "medium" | "high" | "critical";
-
+export type TaskStatus = "open" | "done";
 export type AnalysisStatus = "none" | "pending" | "running" | "done" | "failed";
+export type DigestKind = "daily" | "weekly" | "monthly";
 
 export interface Task {
   id: string;
@@ -13,6 +14,20 @@ export interface Task {
   priority: TaskPriority;
   agentNotes: string | null;
   analysisStatus: AnalysisStatus;
+  status: TaskStatus;
+}
+
+export interface Digest {
+  id: string;
+  kind: DigestKind | string;
+  periodStart: number;
+  periodEnd: number;
+  content: string;
+  preview: string;
+  source: "llm" | "local" | string;
+  status: string;
+  error: string | null;
+  createdAt: number;
 }
 
 export interface AppSettings {
@@ -24,6 +39,15 @@ export interface AppSettings {
   globalHotkey: string;
   autostartEnabled: boolean;
   quickCaptureHintShown: boolean;
+  dailyEnabled: boolean;
+  dailyTime: string;
+  dailyPromptTemplate: string;
+  weeklyEnabled: boolean;
+  weeklyTime: string;
+  weeklyPromptTemplate: string;
+  monthlyEnabled: boolean;
+  monthlyTime: string;
+  monthlyPromptTemplate: string;
 }
 
 export async function createTask(title: string): Promise<Task> {
@@ -34,16 +58,23 @@ export async function updateTask(
   id: string,
   title?: string,
   priority?: TaskPriority,
+  status?: TaskStatus,
 ): Promise<Task> {
-  return invoke("update_task", { id, title, priority });
+  return invoke("update_task", { id, title, priority, status });
 }
 
 export async function deleteTask(id: string): Promise<void> {
   return invoke("delete_task", { id });
 }
 
-export async function listTasks(priorityFilter?: string): Promise<Task[]> {
-  return invoke("list_tasks", { priorityFilter: priorityFilter ?? null });
+export async function listTasks(
+  priorityFilter?: string,
+  statusFilter?: string,
+): Promise<Task[]> {
+  return invoke("list_tasks", {
+    priorityFilter: priorityFilter ?? null,
+    statusFilter: statusFilter ?? null,
+  });
 }
 
 export async function reorderTasks(orderedIds: string[]): Promise<void> {
@@ -74,6 +105,14 @@ export async function enqueueAnalysis(taskId: string): Promise<void> {
   return invoke("enqueue_analysis", { taskId });
 }
 
+export async function listDigests(kindFilter?: string): Promise<Digest[]> {
+  return invoke("list_digests", { kindFilter: kindFilter ?? null });
+}
+
+export async function generateDigestNow(kind: DigestKind): Promise<Digest> {
+  return invoke("generate_digest_now", { kind });
+}
+
 export async function showQuickCapture(): Promise<void> {
   return invoke("show_quick_capture");
 }
@@ -86,12 +125,24 @@ export async function showSettingsWindow(): Promise<void> {
   return invoke("show_settings_window");
 }
 
+export async function showDigestsWindow(): Promise<void> {
+  return invoke("show_digests_window");
+}
+
 export async function hideWindow(label: string): Promise<void> {
   return invoke("hide_window", { label });
 }
 
 export async function registerHotkey(): Promise<void> {
   return invoke("register_hotkey");
+}
+
+export async function unregisterHotkey(): Promise<void> {
+  return invoke("unregister_hotkey");
+}
+
+export async function applyHotkey(hotkey: string): Promise<void> {
+  return invoke("apply_hotkey", { hotkey });
 }
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
@@ -106,6 +157,12 @@ export const PRIORITY_COLORS: Record<TaskPriority, string> = {
   medium: "bg-blue-100 text-blue-700",
   high: "bg-amber-100 text-amber-800",
   critical: "bg-red-100 text-red-700",
+};
+
+export const DIGEST_KIND_LABELS: Record<string, string> = {
+  daily: "День",
+  weekly: "Неделя",
+  monthly: "Месяц",
 };
 
 export function formatDate(timestamp: number): string {

@@ -1,6 +1,6 @@
 use tauri::State;
 
-use crate::db::tasks::TaskPriority;
+use crate::db::tasks::{TaskPriority, TaskStatus};
 use crate::AppState;
 
 #[tauri::command]
@@ -26,11 +26,13 @@ pub fn update_task(
     id: String,
     title: Option<String>,
     priority: Option<String>,
+    status: Option<String>,
 ) -> Result<serde_json::Value, String> {
     let priority = priority.map(|p| TaskPriority::from_str(&p));
+    let status = status.map(|s| TaskStatus::from_str(&s));
     let task = state
         .db
-        .update_task(&id, title.as_deref(), priority)
+        .update_task(&id, title.as_deref(), priority, status)
         .map_err(|e| e.to_string())?;
     serde_json::to_value(&task).map_err(|e| e.to_string())
 }
@@ -44,11 +46,11 @@ pub fn delete_task(state: State<AppState>, id: String) -> Result<(), String> {
 pub fn list_tasks(
     state: State<AppState>,
     priority_filter: Option<String>,
+    status_filter: Option<String>,
 ) -> Result<Vec<serde_json::Value>, String> {
-    let filter = priority_filter.as_deref();
     let tasks = state
         .db
-        .list_tasks(filter)
+        .list_tasks(priority_filter.as_deref(), status_filter.as_deref())
         .map_err(|e| e.to_string())?;
     tasks
         .into_iter()

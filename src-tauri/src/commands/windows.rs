@@ -12,12 +12,17 @@ pub fn show_quick_capture(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub fn show_main_window(app: AppHandle) -> Result<(), String> {
-    show_and_focus(&app, "main")
+    navigate_main(&app, "tasks")
 }
 
 #[tauri::command]
 pub fn show_settings_window(app: AppHandle) -> Result<(), String> {
-    show_and_focus(&app, "settings")
+    navigate_main(&app, "settings")
+}
+
+#[tauri::command]
+pub fn show_digests_window(app: AppHandle) -> Result<(), String> {
+    navigate_main(&app, "digests")
 }
 
 #[tauri::command]
@@ -33,6 +38,19 @@ pub fn hide_window(app: AppHandle, label: String) -> Result<(), String> {
 pub fn register_hotkey(app: AppHandle, state: State<AppState>) -> Result<(), String> {
     let settings = state.db.get_settings().map_err(|e| e.to_string())?;
     register_hotkey_internal(&app, &settings.global_hotkey)
+}
+
+#[tauri::command]
+pub fn unregister_hotkey(app: AppHandle) -> Result<(), String> {
+    app.global_shortcut()
+        .unregister_all()
+        .map_err(|e| e.to_string())
+}
+
+/// Register a hotkey string immediately (e.g. while editing settings before save).
+#[tauri::command]
+pub fn apply_hotkey(app: AppHandle, hotkey: String) -> Result<(), String> {
+    register_hotkey_internal(&app, &hotkey)
 }
 
 pub fn register_hotkey_from_settings(app: &AppHandle) -> Result<(), String> {
@@ -81,6 +99,18 @@ pub fn show_and_focus(app: &AppHandle, label: &str) -> Result<(), String> {
         let _ = window.emit("quick-capture-focus", ());
     }
 
+    Ok(())
+}
+
+/// Show the single main window and ask the UI to switch route (tasks/digests/settings).
+pub fn navigate_main(app: &AppHandle, route: &str) -> Result<(), String> {
+    show_and_focus(app, "main")?;
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.emit(
+            "app-navigate",
+            serde_json::json!({ "route": route }),
+        );
+    }
     Ok(())
 }
 
@@ -144,6 +174,22 @@ fn parse_key_code(key: &str) -> Result<Code, String> {
             'X' => Ok(Code::KeyX),
             'Y' => Ok(Code::KeyY),
             'Z' => Ok(Code::KeyZ),
+            _ => Err(format!("Unsupported key: {key}")),
+        };
+    }
+
+    if key.len() == 1 && single.is_ascii_digit() {
+        return match single {
+            '0' => Ok(Code::Digit0),
+            '1' => Ok(Code::Digit1),
+            '2' => Ok(Code::Digit2),
+            '3' => Ok(Code::Digit3),
+            '4' => Ok(Code::Digit4),
+            '5' => Ok(Code::Digit5),
+            '6' => Ok(Code::Digit6),
+            '7' => Ok(Code::Digit7),
+            '8' => Ok(Code::Digit8),
+            '9' => Ok(Code::Digit9),
             _ => Err(format!("Unsupported key: {key}")),
         };
     }
