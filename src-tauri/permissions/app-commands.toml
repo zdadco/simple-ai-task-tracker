@@ -1,0 +1,20 @@
+[[permission]]
+identifier = "allow-app-commands"
+description = "Allow all application commands"
+commands.allow = [
+  "create_task",
+  "update_task",
+  "delete_task",
+  "list_tasks",
+  "reorder_tasks",
+  "get_settings",
+  "save_settings",
+  "test_llm_connection",
+  "enqueue_analysis",
+  "get_task_analysis",
+  "show_quick_capture",
+  "show_main_window",
+  "show_settings_window",
+  "hide_window",
+  "register_hotkey",
+]

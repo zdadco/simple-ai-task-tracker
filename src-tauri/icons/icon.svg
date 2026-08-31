@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="192" ry="192" fill="url(#bg)"/>
+  <text
+    x="512"
+    y="560"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="Segoe UI, system-ui, -apple-system, sans-serif"
+    font-size="340"
+    font-weight="700"
+    fill="#ffffff"
+    letter-spacing="-8"
+    filter="url(#shadow)"
+  >MTT</text>
+</svg>
