@@ -2,6 +2,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 use crate::db::AppDatabase;
+use crate::windows;
 use crate::AppState;
 
 #[tauri::command]
@@ -23,6 +24,7 @@ pub fn show_settings_window(app: AppHandle) -> Result<(), String> {
 pub fn hide_window(app: AppHandle, label: String) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(&label) {
         window.hide().map_err(|e| e.to_string())?;
+        windows::keep_tray_only(&app);
     }
     Ok(())
 }
@@ -59,11 +61,7 @@ fn register_hotkey_internal(app: &AppHandle, hotkey_str: &str) -> Result<(), Str
 }
 
 pub fn show_and_focus(app: &AppHandle, label: &str) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
-        let _ = app.show();
-    }
+    windows::prepare_window_show(app);
 
     let window = app.get_webview_window(label).ok_or_else(|| {
         let labels: Vec<String> = app
