@@ -5,6 +5,7 @@ import {
   testLlmConnection,
   type AppSettings,
 } from "../lib/tauri";
+import HotkeyPicker from "../components/HotkeyPicker";
 
 const DEFAULT_PROMPT = `Проанализируй задачу и дай краткие заметки (3–5 пунктов):
 что важно, возможные шаги, риски.
@@ -67,9 +68,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-50 p-6">
-      <h1 className="mb-6 text-xl font-semibold text-gray-900">Настройки</h1>
-
+    <div className="h-full overflow-y-auto bg-gray-50 p-6">
       <section className="mb-6 space-y-4 rounded-lg bg-white p-4 shadow-sm">
         <h2 className="font-medium text-gray-800">LLM (OpenAI-compatible)</h2>
 
@@ -151,20 +150,13 @@ export default function Settings() {
 
       <section className="mb-6 space-y-4 rounded-lg bg-white p-4 shadow-sm">
         <h2 className="font-medium text-gray-800">Горячая клавиша</h2>
-        <label className="block">
-          <span className="text-sm text-gray-600">
-            Глобальный шорткат (например Ctrl+Shift+T)
-          </span>
-          <input
-            type="text"
-            value={settings.globalHotkey}
-            onChange={(e) => update({ globalHotkey: e.target.value })}
-            className="mt-1 w-full rounded border border-gray-200 px-3 py-2 text-sm"
-          />
-        </label>
-        <p className="text-xs text-gray-400">
-          Формат: модификаторы через + (Ctrl, Shift, Alt, Win) и буква/клавиша.
+        <p className="text-sm text-gray-600">
+          Открывает быстрое создание задачи из любого приложения.
         </p>
+        <HotkeyPicker
+          value={settings.globalHotkey}
+          onChange={(globalHotkey) => update({ globalHotkey })}
+        />
       </section>
 
       <section className="mb-6 space-y-4 rounded-lg bg-white p-4 shadow-sm">

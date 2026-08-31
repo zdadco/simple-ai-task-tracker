@@ -12,8 +12,10 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useEffect, useState } from "react";
 import TaskItem from "./TaskItem";
-import { reorderTasks, type Task } from "../lib/tauri";
+import { displayHotkey } from "../lib/hotkey";
+import { getSettings, reorderTasks, type Task } from "../lib/tauri";
 
 interface SortableTaskListProps {
   tasks: Task[];
@@ -21,6 +23,14 @@ interface SortableTaskListProps {
 }
 
 export default function SortableTaskList({ tasks, onUpdated }: SortableTaskListProps) {
+  const [hotkeyHint, setHotkeyHint] = useState("Ctrl+Shift+T");
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => setHotkeyHint(displayHotkey(s.globalHotkey)))
+      .catch(() => {});
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -47,7 +57,7 @@ export default function SortableTaskList({ tasks, onUpdated }: SortableTaskListP
   if (tasks.length === 0) {
     return (
       <p className="py-12 text-center text-gray-400">
-        Нет задач. Нажмите Ctrl+Shift+T для быстрого ввода.
+        Нет задач. Нажмите {hotkeyHint} для быстрого ввода.
       </p>
     );
   }

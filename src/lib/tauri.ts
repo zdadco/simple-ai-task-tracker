@@ -137,6 +137,14 @@ export async function registerHotkey(): Promise<void> {
   return invoke("register_hotkey");
 }
 
+export async function unregisterHotkey(): Promise<void> {
+  return invoke("unregister_hotkey");
+}
+
+export async function applyHotkey(hotkey: string): Promise<void> {
+  return invoke("apply_hotkey", { hotkey });
+}
+
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   low: "Низкий",
   medium: "Средний",
