@@ -8,6 +8,7 @@ use tauri_plugin_autostart::MacosLauncher;
 mod agent;
 mod commands;
 mod db;
+mod digest;
 mod tray;
 mod windows;
 
@@ -30,6 +31,7 @@ pub fn run() {
             MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             commands::tasks::create_task,
             commands::tasks::update_task,
@@ -41,9 +43,13 @@ pub fn run() {
             commands::settings::test_llm_connection,
             commands::analysis::enqueue_analysis,
             commands::analysis::get_task_analysis,
+            commands::digests::list_digests,
+            commands::digests::get_digest,
+            commands::digests::generate_digest_now,
             commands::windows::show_quick_capture,
             commands::windows::show_main_window,
             commands::windows::show_settings_window,
+            commands::windows::show_digests_window,
             commands::windows::hide_window,
             commands::windows::register_hotkey,
         ])
@@ -68,14 +74,16 @@ pub fn run() {
             });
 
             tray::setup_tray(app)?;
+            digest::start_digest_scheduler(db_arc.clone(), app.handle().clone());
 
             if let Err(e) = commands::windows::register_hotkey_from_settings(app.handle()) {
                 log::warn!("Failed to register hotkey on startup: {e}");
             }
 
-            // Apply autostart setting
             if let Ok(settings) = db.get_settings() {
-                if let Err(e) = commands::settings::apply_autostart(app.handle(), settings.autostart_enabled) {
+                if let Err(e) =
+                    commands::settings::apply_autostart(app.handle(), settings.autostart_enabled)
+                {
                     log::warn!("Failed to apply autostart: {e}");
                 }
             }

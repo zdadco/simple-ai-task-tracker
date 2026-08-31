@@ -47,6 +47,16 @@ export default function TaskItem({ task, onUpdated }: TaskItemProps) {
     onUpdated();
   }
 
+  async function handleToggleDone() {
+    await updateTask(
+      task.id,
+      undefined,
+      undefined,
+      task.status === "done" ? "open" : "done",
+    );
+    onUpdated();
+  }
+
   async function handleDelete() {
     setDeleteError(null);
     setDeleting(true);
@@ -81,6 +91,13 @@ export default function TaskItem({ task, onUpdated }: TaskItemProps) {
       className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
     >
       <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={task.status === "done"}
+          onChange={handleToggleDone}
+          className="mt-1.5 h-4 w-4 rounded border-gray-300"
+          title={task.status === "done" ? "Вернуть в открытые" : "Выполнено"}
+        />
         <button
           type="button"
           className="mt-1 cursor-grab text-gray-400 hover:text-gray-600 active:cursor-grabbing"
@@ -113,7 +130,13 @@ export default function TaskItem({ task, onUpdated }: TaskItemProps) {
               </button>
             </div>
           ) : (
-            <p className="font-medium text-gray-900">{task.title}</p>
+            <p
+              className={`font-medium text-gray-900 ${
+                task.status === "done" ? "line-through opacity-60" : ""
+              }`}
+            >
+              {task.title}
+            </p>
           )}
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">

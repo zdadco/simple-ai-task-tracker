@@ -14,13 +14,14 @@ fn tray_icon() -> tauri::Result<Image<'static>> {
 pub fn setup_tray(app: &App) -> tauri::Result<()> {
     let new_task = MenuItem::with_id(app, "new_task", "Новая задача", true, None::<&str>)?;
     let open_list = MenuItem::with_id(app, "open_list", "Открыть список", true, None::<&str>)?;
+    let digests = MenuItem::with_id(app, "digests", "Дайджесты", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Настройки", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let quit = MenuItem::with_id(app, "quit", "Выход", true, None::<&str>)?;
 
     let menu = Menu::with_items(
         app,
-        &[&new_task, &open_list, &settings, &separator, &quit],
+        &[&new_task, &open_list, &digests, &settings, &separator, &quit],
     )?;
 
     // Tray id must NOT match any window label (e.g. "main") — that breaks get_webview_window on macOS.
@@ -36,6 +37,9 @@ pub fn setup_tray(app: &App) -> tauri::Result<()> {
             }
             "open_list" => {
                 let _ = show_and_focus(&app, "main");
+            }
+            "digests" => {
+                let _ = show_and_focus(&app, "digests");
             }
             "settings" => {
                 let _ = show_and_focus(&app, "settings");

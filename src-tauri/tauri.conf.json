@@ -43,6 +43,16 @@
         "visible": false,
         "center": true,
         "resizable": true
+      },
+      {
+        "label": "digests",
+        "title": "Дайджесты",
+        "url": "index.html",
+        "width": 640,
+        "height": 700,
+        "visible": false,
+        "center": true,
+        "resizable": true
       }
     ],
     "security": {

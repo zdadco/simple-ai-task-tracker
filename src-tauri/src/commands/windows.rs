@@ -21,6 +21,11 @@ pub fn show_settings_window(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn show_digests_window(app: AppHandle) -> Result<(), String> {
+    show_and_focus(&app, "digests")
+}
+
+#[tauri::command]
 pub fn hide_window(app: AppHandle, label: String) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(&label) {
         window.hide().map_err(|e| e.to_string())?;

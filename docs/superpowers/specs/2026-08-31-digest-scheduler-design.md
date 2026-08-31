@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-31  
 **Branch:** `feat/digest-scheduler`  
-**Status:** Draft for review
+**Status:** Approved — implementing
 
 ## Problem
 

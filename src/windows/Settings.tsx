@@ -168,6 +168,51 @@ export default function Settings() {
       </section>
 
       <section className="mb-6 space-y-4 rounded-lg bg-white p-4 shadow-sm">
+        <h2 className="font-medium text-gray-800">Дайджесты</h2>
+        <p className="text-xs text-gray-500">
+          Время в локальном часовом поясе системы. Плейсхолдеры: {"{kind}"}, {"{period_start}"},{" "}
+          {"{period_end}"}, {"{tasks}"}.
+        </p>
+
+        {(
+          [
+            ["daily", "День", "dailyEnabled", "dailyTime", "dailyPromptTemplate"],
+            ["weekly", "Неделя (пн)", "weeklyEnabled", "weeklyTime", "weeklyPromptTemplate"],
+            ["monthly", "Месяц (1-е)", "monthlyEnabled", "monthlyTime", "monthlyPromptTemplate"],
+          ] as const
+        ).map(([key, label, enabledKey, timeKey, promptKey]) => (
+          <div key={key} className="space-y-2 rounded border border-gray-100 p-3">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={settings[enabledKey]}
+                onChange={(e) => update({ [enabledKey]: e.target.checked })}
+              />
+              <span className="text-sm font-medium">{label}</span>
+            </label>
+            <label className="block">
+              <span className="text-xs text-gray-600">Время (HH:MM)</span>
+              <input
+                type="time"
+                value={settings[timeKey]}
+                onChange={(e) => update({ [timeKey]: e.target.value })}
+                className="mt-1 block rounded border border-gray-200 px-2 py-1 text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-gray-600">Промпт</span>
+              <textarea
+                value={settings[promptKey]}
+                onChange={(e) => update({ [promptKey]: e.target.value })}
+                rows={4}
+                className="mt-1 w-full rounded border border-gray-200 px-2 py-1 font-mono text-xs"
+              />
+            </label>
+          </div>
+        ))}
+      </section>
+
+      <section className="mb-6 space-y-4 rounded-lg bg-white p-4 shadow-sm">
         <h2 className="font-medium text-gray-800">Автозапуск</h2>
         <label className="flex items-center gap-2">
           <input

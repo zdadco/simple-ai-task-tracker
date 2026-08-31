@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import {
+  showDigestsWindow,
   showQuickCapture,
   showSettingsWindow,
   listTasks,
   type Task,
   type TaskPriority,
+  type TaskStatus,
 } from "../lib/tauri";
 import PriorityFilter from "../components/PriorityFilter";
 import SortableTaskList from "../components/SortableTaskList";
@@ -13,16 +15,20 @@ import SortableTaskList from "../components/SortableTaskList";
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<TaskPriority | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("open");
   const [loading, setLoading] = useState(true);
 
   const loadTasks = useCallback(async () => {
     try {
-      const data = await listTasks(filter === "all" ? undefined : filter);
+      const data = await listTasks(
+        filter === "all" ? undefined : filter,
+        statusFilter === "all" ? undefined : statusFilter,
+      );
       setTasks(data);
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, statusFilter]);
 
   useEffect(() => {
     loadTasks();
@@ -37,7 +43,6 @@ export default function TaskList() {
     };
   }, [loadTasks]);
 
-  // Poll for analysis status updates
   useEffect(() => {
     const interval = setInterval(() => {
       if (tasks.some((t) => t.analysisStatus === "pending" || t.analysisStatus === "running")) {
@@ -61,6 +66,13 @@ export default function TaskList() {
           </button>
           <button
             type="button"
+            onClick={() => showDigestsWindow()}
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            Дайджесты
+          </button>
+          <button
+            type="button"
             onClick={() => showSettingsWindow()}
             className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
           >
@@ -69,8 +81,30 @@ export default function TaskList() {
         </div>
       </header>
 
-      <div className="border-b border-gray-200 bg-white px-6 py-3">
+      <div className="space-y-2 border-b border-gray-200 bg-white px-6 py-3">
         <PriorityFilter value={filter} onChange={setFilter} />
+        <div className="flex gap-2">
+          {(
+            [
+              ["open", "Открытые"],
+              ["done", "Выполненные"],
+              ["all", "Все"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setStatusFilter(value)}
+              className={`rounded-full px-3 py-1 text-xs ${
+                statusFilter === value
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <main className="flex-1 overflow-y-auto p-6">
