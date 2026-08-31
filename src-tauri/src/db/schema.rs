@@ -1,6 +1,7 @@
 use rusqlite::{Connection, Result as SqlResult};
 
 pub fn run_migrations(conn: &Connection) -> SqlResult<()> {
+    // Base tables (CREATE IF NOT EXISTS does not add new columns to existing tables)
     conn.execute_batch(
         "
         CREATE TABLE IF NOT EXISTS tasks (
@@ -36,12 +37,17 @@ pub fn run_migrations(conn: &Connection) -> SqlResult<()> {
 
         CREATE INDEX IF NOT EXISTS idx_tasks_sort_order ON tasks(sort_order);
         CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
-        CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
         CREATE INDEX IF NOT EXISTS idx_digests_kind_period ON digests(kind, period_start);
         ",
     )?;
 
+    // Upgrade existing installs before indexes that depend on new columns
     ensure_column(conn, "tasks", "status", "TEXT NOT NULL DEFAULT 'open'")?;
+
+    conn.execute_batch(
+        "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);",
+    )?;
+
     Ok(())
 }
 
